@@ -21,7 +21,7 @@ func NewConfig() (Config, error) {
 	}
 	return Config{
 		HttpPort:         httpPort,
-		ConnectionString: getEnv("CONNECTION_STRING", "root:toor@tcp(localhost:3306)/alta?charset=utf8&parseTime=True&loc=Local"),
+		ConnectionString: getEnv("CONNECTION_STRING", "root:@tcp(localhost:3306)/news?charset=utf8&parseTime=True&loc=Local"),
 		Storage:          getEnv("STORAGE", "db"), // "db" or "mem"
 		JwtSecret:        getEnv("JWT_SECRET", "rahasiaBanget"),
 	}, nil

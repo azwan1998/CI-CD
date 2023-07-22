@@ -19,6 +19,7 @@ func (pm *PersonMemModel) GetByEmailAndPassword(email string, password string) (
 			return person, nil
 		}
 	}
+
 	return person, fmt.Errorf("person not found")
 }
 
