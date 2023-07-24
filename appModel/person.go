@@ -11,3 +11,7 @@ type Person struct {
 	isActive string `json:"isActive"`
 	Token    string `json:"token"`
 }
+
+func (Person) TableName() string {
+	return "users"
+}

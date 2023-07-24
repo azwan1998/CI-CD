@@ -9,7 +9,7 @@ type PersonDbModel struct {
 }
 
 func NewPersonDbModel(db *gorm.DB) *PersonDbModel {
-	db.AutoMigrate(&Person{})
+	// db.AutoMigrate(&Person{})
 	return &PersonDbModel{
 		db: db,
 	}
@@ -34,7 +34,7 @@ func (pm *PersonDbModel) Add(p Person) (Person, error) {
 
 func (pm *PersonDbModel) Edit(id int, newP Person) (Person, error) {
 	p := Person{}
-	// "select * from people where id=?", id
+	// "select * from users where id=?", id
 	err := pm.db.First(&p, id).Error
 	if err != nil {
 		return p, err

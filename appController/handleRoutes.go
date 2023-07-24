@@ -18,10 +18,26 @@ func HandleRoutes(e *echo.Echo, jwtSecret string, personModel appModel.PersonMod
 
 	jwtMiddleware := middleware.JWT([]byte(jwtSecret))
 
+	//users
 	e.GET("/persons", personController.GetAll, jwtMiddleware)
 	e.GET("/persons/", personController.GetAll, jwtMiddleware)
 	e.PUT("/persons/:id", personController.Edit, jwtMiddleware)
 	e.PUT("/persons/:id/", personController.Edit, jwtMiddleware)
 
 	return personController
+}
+
+func HandleRoutesNews(e *echo.Echo, jwtSecret string, newsModel appModel.NewsModel) NewsController {
+
+	newsController := NewNewsController(jwtSecret, newsModel)
+
+	jwtMiddleware := middleware.JWT([]byte(jwtSecret))
+
+	//users
+	e.GET("/news", newsController.GetAll, jwtMiddleware)
+	e.GET("/news/", newsController.GetAll, jwtMiddleware)
+	e.POST("/news/store", newsController.Add, jwtMiddleware)
+	e.POST("/news/store/", newsController.Add, jwtMiddleware)
+
+	return newsController
 }

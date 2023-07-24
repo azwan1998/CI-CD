@@ -20,6 +20,7 @@ func main() {
 
 	// personModel can be either personMemModel or personDbModel, depends on the configuration
 	var personModel appModel.PersonModel
+	var newsModel appModel.NewsModel
 	switch cfg.Storage {
 	case "db":
 		db, err := gorm.Open(mysql.Open(cfg.ConnectionString), &gorm.Config{})
@@ -35,6 +36,7 @@ func main() {
 	e := echo.New()
 	appMiddleware.AddGlobalMiddlewares(e)
 	appController.HandleRoutes(e, cfg.JwtSecret, personModel)
+	appController.HandleRoutesNews(e, cfg.JwtSecret, newsModel)
 
 	if err = e.Start(fmt.Sprintf(":%d", cfg.HttpPort)); err != nil {
 		panic(err)
