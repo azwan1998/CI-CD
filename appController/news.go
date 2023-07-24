@@ -14,10 +14,9 @@ type NewsController struct {
 	jwtSecret string
 }
 
-func NewNewsController(jwtSecret string, m appModel.NewsModel) NewsController {
+func NewNewsController(m appModel.NewsModel) NewsController {
 	return NewsController{
-		jwtSecret: jwtSecret,
-		model:     m,
+		model: m,
 	}
 }
 
