@@ -1,11 +1,17 @@
 package appMiddleware
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/golang-jwt/jwt"
 	"github.com/labstack/echo/v4"
 )
+
+type UserInfo struct {
+	IdUser int
+	Role   string
+}
 
 func CreateToken(personId int, jwtSecret string) (string, error) {
 	claims := jwt.MapClaims{}
@@ -17,17 +23,18 @@ func CreateToken(personId int, jwtSecret string) (string, error) {
 
 }
 
-func ExtractTokenUserId(c echo.Context) int {
+func ExtractTokenUserId(c echo.Context) UserInfo {
 	token := c.Get("user").(*jwt.Token)
 	if token != nil && token.Valid {
 		claims := token.Claims.(jwt.MapClaims)
 		personId := claims["personId"]
+		role := claims["role"]
 		switch personId.(type) {
 		case float64:
-			return int(personId.(float64))
+			return UserInfo{IdUser: int(personId.(float64)), Role: fmt.Sprintf("%v", role)}
 		default:
-			return personId.(int)
+			return UserInfo{IdUser: personId.(int), Role: fmt.Sprintf("%v", role)}
 		}
 	}
-	return -1 // invalid user
+	return UserInfo{IdUser: -1, Role: ""} // invalid user
 }

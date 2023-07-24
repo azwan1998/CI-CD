@@ -5,8 +5,13 @@ import "gorm.io/gorm"
 type Person struct {
 	gorm.Model
 	Name     string `json:"name"`
-	Address  string `json:"address"`
 	Email    string `json:"email"`
 	Password string `json:"password"`
+	Role     string `json:"role"`
+	isActive string `json:"isActive"`
 	Token    string `json:"token"`
+}
+
+func (Person) TableName() string {
+	return "users"
 }
