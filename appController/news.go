@@ -14,15 +14,16 @@ type NewsController struct {
 	jwtSecret string
 }
 
-func NewNewsController(m appModel.NewsModel) NewsController {
+func NewNewsController(m appModel.NewsModel, jwtSecret string) NewsController {
 	return NewsController{
-		model: m,
+		model:     m,
+		jwtSecret: jwtSecret,
 	}
 }
 
 func (pc NewsController) GetAll(c echo.Context) error {
-	currentLoginNewsId := appMiddleware.ExtractTokenUserId(c)
-	fmt.Println("😸 Current user id: ", currentLoginNewsId)
+	userInfo := appMiddleware.ExtractTokenUserId(c)
+	fmt.Println("😸 Current user id: ", userInfo.IdUser)
 	allNews, err := pc.model.GetAll()
 	if err != nil {
 		fmt.Println(err)
@@ -32,11 +33,23 @@ func (pc NewsController) GetAll(c echo.Context) error {
 }
 
 func (pc NewsController) Add(c echo.Context) error {
+	userInfo := appMiddleware.ExtractTokenUserId(c)
+	fmt.Println("Current user id: ", userInfo.Role)
 	var news appModel.News
 	if err := c.Bind(&news); err != nil {
 		fmt.Println(err)
 		return c.String(http.StatusBadRequest, "invalid News data")
 	}
+
+	//status upload
+	status := "upload"
+	news.Status = status
+
+	news.Id_user = userInfo.IdUser
+	if userInfo.Role != "jurnalis" {
+		return c.String(http.StatusForbidden, "You are not allowed to add news")
+	}
+
 	news, err := pc.model.Add(news)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "cannot add News")

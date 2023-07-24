@@ -28,6 +28,7 @@ func main() {
 			panic(err)
 		}
 		personModel = appModel.NewPersonDbModel(db)
+		newsModel = appModel.NewNewsDbModel(db)
 	case "mem":
 		personModel = appModel.NewPersonMemModel()
 	}

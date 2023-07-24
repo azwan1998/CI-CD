@@ -29,7 +29,7 @@ func HandleRoutes(e *echo.Echo, jwtSecret string, personModel appModel.PersonMod
 
 func HandleRoutesNews(e *echo.Echo, jwtSecret string, newsModel appModel.NewsModel) NewsController {
 
-	newsController := NewNewsController(newsModel)
+	newsController := NewNewsController(newsModel, jwtSecret)
 
 	jwtMiddleware := middleware.JWT([]byte(jwtSecret))
 
