@@ -31,23 +31,59 @@ func NewPersonController(jwtSecret string, m appModel.PersonModel) PersonControl
 func (pc PersonController) Login(c echo.Context) error {
 	loginInfo := LoginInfo{}
 	c.Bind(&loginInfo)
-	person, err := pc.model.GetByEmailAndPassword(loginInfo.Email, loginInfo.Password)
+	person, err := pc.model.GetByEmail(loginInfo.Email)
 	if err != nil {
 		fmt.Println(err)
 		return c.String(http.StatusBadRequest, "cannot login")
 	}
+
+	if !appMiddleware.VerifyPassword(loginInfo.Password, person.Password) {
+		return c.String(http.StatusUnauthorized, "invalid credentials")
+	}
+
 	token, err := appMiddleware.CreateToken(int(person.ID), pc.jwtSecret)
 	if err != nil {
 		fmt.Println(err)
-		return c.String(http.StatusBadRequest, "cannot login")
+		return c.String(http.StatusBadRequest, "cannot create token")
 	}
 	person.Token = token
+
 	person, err = pc.model.Edit(int(person.ID), person)
 	if err != nil {
 		fmt.Println(err)
 		return c.String(http.StatusInternalServerError, "cannot add token")
 	}
 	return c.JSON(http.StatusOK, person)
+}
+
+func (pc PersonController) Register(c echo.Context) error {
+	person := appModel.Person{}
+	c.Bind(&person)
+
+	// Enkripsi kata sandi sebelum menyimpan ke database
+	encryptedPassword, err := appMiddleware.EncryptPassword(person.Password)
+	if err != nil {
+		fmt.Println(err)
+		return c.String(http.StatusInternalServerError, "cannot register")
+	}
+
+	person.Password = encryptedPassword
+
+	newPerson, err := pc.model.Add(person)
+	if err != nil {
+		fmt.Println(err)
+		return c.String(http.StatusBadRequest, "cannot register")
+	}
+
+	// Generate token
+	token, err := appMiddleware.CreateToken(int(newPerson.ID), pc.jwtSecret)
+	if err != nil {
+		fmt.Println(err)
+		return c.String(http.StatusBadRequest, "cannot generate token")
+	}
+	newPerson.Token = token
+
+	return c.JSON(http.StatusOK, newPerson)
 }
 
 func (pc PersonController) GetAll(c echo.Context) error {

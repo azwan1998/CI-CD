@@ -21,6 +21,12 @@ func (pm *PersonDbModel) GetByEmailAndPassword(email string, password string) (P
 	return p, err
 }
 
+func (pm *PersonDbModel) GetByEmail(email string) (Person, error) {
+	p := Person{}
+	err := pm.db.Where("email = ? ", email).First(&p).Error
+	return p, err
+}
+
 func (pm *PersonDbModel) GetAll() ([]Person, error) {
 	var allPerson []Person
 	err := pm.db.Find(&allPerson).Error
