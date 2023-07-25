@@ -7,4 +7,5 @@ CREATE TABLE `news`.`news` (
   `status` VARCHAR(45) NOT NULL,
   `created_at` TIMESTAMP(6) NULL,
   `updated_at` TIMESTAMP(6) NULL,
+  `deleted_at` TIMESTAMP(6) NULL,
   PRIMARY KEY (`id`));
