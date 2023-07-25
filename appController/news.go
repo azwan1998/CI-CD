@@ -5,6 +5,7 @@ import (
 	"gofrendi/structureExample/appMiddleware"
 	"gofrendi/structureExample/appModel"
 	"net/http"
+	"strconv"
 
 	"github.com/labstack/echo/v4"
 )
@@ -21,6 +22,7 @@ func NewNewsController(m appModel.NewsModel, jwtSecret string) NewsController {
 	}
 }
 
+// nampilkan semua berita
 func (pc NewsController) GetAll(c echo.Context) error {
 	userInfo := appMiddleware.ExtractTokenUserId(c)
 	fmt.Println("😸 Current user id: ", userInfo.IdUser)
@@ -32,6 +34,7 @@ func (pc NewsController) GetAll(c echo.Context) error {
 	return c.JSON(http.StatusOK, allNews)
 }
 
+// upload berita
 func (pc NewsController) Add(c echo.Context) error {
 	userInfo := appMiddleware.ExtractTokenUserId(c)
 	fmt.Println("Current user id: ", userInfo.Role)
@@ -54,5 +57,21 @@ func (pc NewsController) Add(c echo.Context) error {
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "cannot add News")
 	}
+	return c.JSON(http.StatusOK, news)
+}
+
+// untuk read berita
+func (pc NewsController) Show(c echo.Context) error {
+	id, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.String(http.StatusBadRequest, "Invalid news ID")
+	}
+
+	news, err := pc.model.GetByID(id)
+	if err != nil {
+		fmt.Println(err)
+		return c.String(http.StatusInternalServerError, "Cannot get News")
+	}
+
 	return c.JSON(http.StatusOK, news)
 }

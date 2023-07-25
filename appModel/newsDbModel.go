@@ -20,6 +20,12 @@ func (pm *NewsDbModel) GetAll() ([]News, error) {
 	return allNews, err
 }
 
+func (pm *NewsDbModel) GetByID(id int) (News, error) {
+	var news News
+	err := pm.db.First(&news, id).Error
+	return news, err
+}
+
 func (pm *NewsDbModel) Add(p News) (News, error) {
 	err := pm.db.Save(&p).Error
 	return p, err
