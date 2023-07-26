@@ -10,8 +10,6 @@ import (
 func HandleRoutes(e *echo.Echo, jwtSecret string, personModel appModel.PersonModel) PersonController {
 
 	personController := NewPersonController(jwtSecret, personModel)
-	e.POST("/persons", personController.Add)
-	e.POST("/persons/", personController.Add)
 
 	e.POST("/login", personController.Login)
 	e.POST("/login/", personController.Login)
@@ -41,8 +39,12 @@ func HandleRoutesNews(e *echo.Echo, jwtSecret string, newsModel appModel.NewsMod
 	e.GET("/news/", newsController.GetAll, jwtMiddleware)
 	e.POST("/news/store", newsController.Add, jwtMiddleware)
 	e.POST("/news/store/", newsController.Add, jwtMiddleware)
+	e.POST("/news/update:id", newsController.Edit, jwtMiddleware)
+	e.POST("/news/update/:id", newsController.Edit, jwtMiddleware)
 	e.GET("/news/:id", newsController.Show, jwtMiddleware)
 	e.GET("/news/:id/", newsController.Show, jwtMiddleware)
+	e.GET("/news/status", newsController.GetByStatus, jwtMiddleware)
+	e.GET("/news/status/", newsController.GetByStatus, jwtMiddleware)
 
 	return newsController
 }
