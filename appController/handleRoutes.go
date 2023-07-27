@@ -32,19 +32,24 @@ func HandleRoutesNews(e *echo.Echo, jwtSecret string, newsModel appModel.NewsMod
 
 	newsController := NewNewsController(newsModel, jwtSecret)
 
+	e.GET("/news", newsController.GetAll)
+	e.GET("/news/", newsController.GetAll)
+	e.GET("/news/:id", newsController.Show)
+	e.GET("/news/:id/", newsController.Show)
+
 	jwtMiddleware := middleware.JWT([]byte(jwtSecret))
 
 	//users
-	e.GET("/news", newsController.GetAll, jwtMiddleware)
-	e.GET("/news/", newsController.GetAll, jwtMiddleware)
 	e.POST("/news/store", newsController.Add, jwtMiddleware)
 	e.POST("/news/store/", newsController.Add, jwtMiddleware)
 	e.POST("/news/update:id", newsController.Edit, jwtMiddleware)
 	e.POST("/news/update/:id", newsController.Edit, jwtMiddleware)
-	e.GET("/news/:id", newsController.Show, jwtMiddleware)
-	e.GET("/news/:id/", newsController.Show, jwtMiddleware)
+	e.POST("/news/approve:id", newsController.ApproveNews, jwtMiddleware)
+	e.POST("/news/approve/:id", newsController.ApproveNews, jwtMiddleware)
 	e.GET("/news/status", newsController.GetByStatus, jwtMiddleware)
 	e.GET("/news/status/", newsController.GetByStatus, jwtMiddleware)
+	e.GET("/news/category", newsController.GetByCategory, jwtMiddleware)
+	e.GET("/news/category/", newsController.GetByCategory, jwtMiddleware)
 
 	return newsController
 }
