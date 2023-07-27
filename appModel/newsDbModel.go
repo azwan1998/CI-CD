@@ -43,7 +43,7 @@ func (nm *NewsDbModel) Edit(id int, news News) (News, error) {
 	if err != nil {
 		return p, err
 	}
-	p.Id_user = news.Id_user
+	p.Id_usrJurnalis = news.Id_usrJurnalis
 	p.Judul = news.Judul
 	p.Isi = news.Isi
 	p.Kategori = news.Kategori

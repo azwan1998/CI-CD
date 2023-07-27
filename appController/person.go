@@ -41,7 +41,7 @@ func (pc PersonController) Login(c echo.Context) error {
 		return c.String(http.StatusUnauthorized, "invalid credentials")
 	}
 
-	token, err := appMiddleware.CreateToken(int(person.ID), pc.jwtSecret)
+	token, err := appMiddleware.CreateToken(int(person.ID), person.Role, pc.jwtSecret)
 	if err != nil {
 		fmt.Println(err)
 		return c.String(http.StatusBadRequest, "cannot create token")
@@ -76,7 +76,7 @@ func (pc PersonController) Register(c echo.Context) error {
 	}
 
 	// Generate token
-	token, err := appMiddleware.CreateToken(int(newPerson.ID), pc.jwtSecret)
+	token, err := appMiddleware.CreateToken(int(newPerson.ID), person.Role, pc.jwtSecret)
 	if err != nil {
 		fmt.Println(err)
 		return c.String(http.StatusBadRequest, "cannot generate token")

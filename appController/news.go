@@ -48,7 +48,7 @@ func (nc NewsController) Add(c echo.Context) error {
 	status := "upload"
 	news.Status = status
 
-	news.Id_user = userInfo.IdUser
+	news.Id_usrJurnalis = userInfo.IdUser
 	if userInfo.Role != "jurnalis" {
 		return c.String(http.StatusForbidden, "You are not allowed to add news")
 	}

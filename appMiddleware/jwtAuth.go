@@ -13,11 +13,12 @@ type UserInfo struct {
 	Role   string
 }
 
-func CreateToken(personId int, jwtSecret string) (string, error) {
+func CreateToken(personId int, role string, jwtSecret string) (string, error) {
 	claims := jwt.MapClaims{}
 	claims["authorized"] = true
 	claims["personId"] = personId
-	claims["exp"] = time.Now().Add(time.Hour * 1).Unix() //Token expires after 1 hour
+	claims["role"] = role
+	claims["exp"] = time.Now().Add(time.Hour * 24).Unix() //Token expires after 1 hour
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 	return token.SignedString([]byte(jwtSecret))
 
