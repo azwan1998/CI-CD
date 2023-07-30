@@ -17,14 +17,16 @@ type LoginInfo struct {
 }
 
 type PersonController struct {
-	model     appModel.PersonModel
-	jwtSecret string
+	model        appModel.PersonModel
+	profileModel appModel.ProfileModel
+	jwtSecret    string
 }
 
-func NewPersonController(jwtSecret string, m appModel.PersonModel) PersonController {
+func NewPersonController(jwtSecret string, m appModel.PersonModel, profileModel appModel.ProfileModel) PersonController {
 	return PersonController{
-		jwtSecret: jwtSecret,
-		model:     m,
+		jwtSecret:    jwtSecret,
+		model:        m,
+		profileModel: profileModel,
 	}
 }
 
@@ -73,6 +75,19 @@ func (pc PersonController) Register(c echo.Context) error {
 	if err != nil {
 		fmt.Println(err)
 		return c.String(http.StatusBadRequest, "cannot register")
+	}
+
+	userID := int(newPerson.ID)
+
+	profile := appModel.Profile{
+		IdUser: userID,
+		// Set other profile data here if needed
+	}
+
+	_, err = pc.profileModel.Add(profile)
+	if err != nil {
+		fmt.Println(err)
+		return c.String(http.StatusInternalServerError, "cannot create profile")
 	}
 
 	// Generate token

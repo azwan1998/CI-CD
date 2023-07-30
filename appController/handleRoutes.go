@@ -7,9 +7,9 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
-func HandleRoutes(e *echo.Echo, jwtSecret string, personModel appModel.PersonModel) PersonController {
+func HandleRoutes(e *echo.Echo, jwtSecret string, personModel appModel.PersonModel, profileModel appModel.ProfileModel) PersonController {
 
-	personController := NewPersonController(jwtSecret, personModel)
+	personController := NewPersonController(jwtSecret, personModel, profileModel)
 
 	e.POST("/login", personController.Login)
 	e.POST("/login/", personController.Login)
@@ -52,4 +52,25 @@ func HandleRoutesNews(e *echo.Echo, jwtSecret string, newsModel appModel.NewsMod
 	e.GET("/news/category/", newsController.GetByCategory, jwtMiddleware)
 
 	return newsController
+}
+
+func HandleRoutesProfile(e *echo.Echo, jwtSecret string, profileModel appModel.ProfileModel) ProfileController {
+
+	profileController := NewProfileController(profileModel, jwtSecret)
+
+	jwtMiddleware := middleware.JWT([]byte(jwtSecret))
+
+	//users
+	e.GET("/profile", profileController.GetAll, jwtMiddleware)
+	e.GET("/profile/", profileController.GetAll, jwtMiddleware)
+	e.GET("/profile:id", profileController.GetById, jwtMiddleware)
+	e.GET("/profile/:id", profileController.GetById, jwtMiddleware)
+	e.POST("/profile/store", profileController.Add, jwtMiddleware)
+	e.POST("/profile/store/", profileController.Add, jwtMiddleware)
+	e.POST("/profile/update:id", profileController.Edit, jwtMiddleware)
+	e.POST("/profile/update/:id", profileController.Edit, jwtMiddleware)
+	e.POST("/profile/approve:id", profileController.ApproveProfile, jwtMiddleware)
+	e.POST("/profile/approve/:id", profileController.ApproveProfile, jwtMiddleware)
+
+	return profileController
 }
