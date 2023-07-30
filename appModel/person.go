@@ -8,7 +8,7 @@ type Person struct {
 	Email    string `json:"email"`
 	Password string `json:"password"`
 	Role     string `json:"role"`
-	isActive string `json:"isActive"`
+	IsActive bool   `json:"isActive" gorm:"column:isActive"`
 	Token    string `json:"token"`
 }
 
