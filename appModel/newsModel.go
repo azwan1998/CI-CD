@@ -1,10 +1,11 @@
 package appModel
 
 type NewsModel interface {
-	GetAll() ([]News, error)
+	GetAll(view string) ([]News, error)
 	GetByID(id int) (News, error)
 	GetByStatus(status string) ([]News, error)
-	GetByCategory(category string) ([]News, error)
+	GetByStatusJE(id_user int, status string) ([]News, error)
+	GetByCategory(category string, status string) ([]News, error)
 	Add(News) (News, error)
 	Edit(int, News) (News, error)
 	ApproveNews(int, News) (News, error)

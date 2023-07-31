@@ -40,7 +40,7 @@ func main() {
 	e := echo.New()
 	appMiddleware.AddGlobalMiddlewares(e)
 	appController.HandleRoutes(e, cfg.JwtSecret, personModel, profileModel)
-	appController.HandleRoutesNews(e, cfg.JwtSecret, newsModel)
+	appController.HandleRoutesNews(e, cfg.JwtSecret, newsModel, profileModel)
 	appController.HandleRoutesProfile(e, cfg.JwtSecret, profileModel)
 
 	if err = e.Start(fmt.Sprintf(":%d", cfg.HttpPort)); err != nil {

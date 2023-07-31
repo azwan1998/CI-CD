@@ -82,6 +82,25 @@ func (pm *ProfileMemModel) GetById(id int) (*ProfileResponse, error) {
 	return nil, errors.New("profile not found")
 }
 
+func (pm *ProfileMemModel) GetByIdUser(id int) (*ProfileResponse, error) {
+	for _, p := range pm.data {
+		if int(p.ID) == id {
+			profileResponse := ProfileResponse{
+				Alamat:     p.Alamat,
+				Institusi:  p.Institusi,
+				Foto:       p.Foto,
+				FotoIjazah: p.FotoIjazah,
+				FotoKTP:    p.FotoKTP,
+				Surat:      p.Surat,
+				IsApprove:  p.IsApprove,
+				// Add other fields as needed from the User struct
+			}
+			return &profileResponse, nil
+		}
+	}
+	return nil, errors.New("profile not found")
+}
+
 func (m *ProfileMemModel) GetByID(id int, profile *Profile) error {
 	for _, p := range m.data {
 		if p.ID == uint(id) {

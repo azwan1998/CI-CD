@@ -70,6 +70,7 @@ func (pc PersonController) Register(c echo.Context) error {
 	}
 
 	person.Password = encryptedPassword
+	person.IsActive = true
 
 	newPerson, err := pc.model.Add(person)
 	if err != nil {

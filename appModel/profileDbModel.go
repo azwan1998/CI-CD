@@ -18,9 +18,25 @@ func NewProfileDbModel(db *gorm.DB) *ProfileDbModel {
 func (pm *ProfileDbModel) GetById(userID int) (*ProfileResponse, error) {
 	var profile ProfileResponse
 	err := pm.db.Model(&Profile{}).
-		Select("profiles.id,profiles.id_user, profiles.alamat, profiles.institusi, profiles.foto, profiles.fotoIjazah, profiles.fotoKTP, profiles.surat, profiles.isApprove, profiles.created_at, profiles.updated_at, users.name as user_name, users.email, users.role,users.isActive").
+		Select("profiles.id,profiles.id_user, profiles.alamat, profiles.institusi, profiles.foto, profiles.fotoIjazah, profiles.fotoKTP, profiles.surat, profiles.isApprove as IsApprove, profiles.created_at, profiles.updated_at, users.name as user_name, users.email, users.role,users.isActive").
 		Joins("left join users on profiles.id_user = users.id").
 		Where("profiles.id = ?", userID).
+		Scan(&profile).
+		Error
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &profile, nil
+}
+
+func (pm *ProfileDbModel) GetByIdUser(userID int) (*ProfileResponse, error) {
+	var profile ProfileResponse
+	err := pm.db.Model(&Profile{}).
+		Select("profiles.id,profiles.id_user, profiles.alamat, profiles.institusi, profiles.foto, profiles.fotoIjazah, profiles.fotoKTP, profiles.surat, profiles.isApprove as IsApprove, profiles.created_at, profiles.updated_at, users.name as user_name, users.email, users.role,users.isActive").
+		Joins("left join users on profiles.id_user = users.id").
+		Where("profiles.id_user = ?", userID).
 		Scan(&profile).
 		Error
 
