@@ -11,20 +11,23 @@ import (
 )
 
 type NewsController struct {
-	model     appModel.NewsModel
-	jwtSecret string
+	model        appModel.NewsModel
+	profileModel appModel.ProfileModel
+	jwtSecret    string
 }
 
-func NewNewsController(m appModel.NewsModel, jwtSecret string) NewsController {
+func NewNewsController(m appModel.NewsModel, pm appModel.ProfileModel, jwtSecret string) NewsController {
 	return NewsController{
-		model:     m,
-		jwtSecret: jwtSecret,
+		model:        m,
+		profileModel: pm,
+		jwtSecret:    jwtSecret,
 	}
 }
 
 // nampilkan semua berita
 func (nc NewsController) GetAll(c echo.Context) error {
-	allNews, err := nc.model.GetAll()
+	view := c.QueryParam("view")
+	allNews, err := nc.model.GetAll(view)
 	if err != nil {
 		fmt.Println(err)
 		return c.String(http.StatusInternalServerError, "cannot get News")
@@ -42,6 +45,17 @@ func (nc NewsController) Add(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "invalid News data")
 	}
 
+	profile, err := nc.profileModel.GetByIdUser(userInfo.IdUser)
+	fmt.Println("data profile: ", profile.IsApprove)
+	if err != nil {
+		fmt.Println(err)
+		return c.String(http.StatusInternalServerError, "cannot get Profile")
+	}
+
+	if profile.IsApprove == false {
+		return c.String(http.StatusForbidden, "You are not allowed to add news, contact admin redaksi to approve your profile")
+	}
+
 	//status upload
 	status := "upload"
 	news.Status = status
@@ -51,7 +65,7 @@ func (nc NewsController) Add(c echo.Context) error {
 		return c.String(http.StatusForbidden, "You are not allowed to add news")
 	}
 
-	news, err := nc.model.Add(news)
+	news, err = nc.model.Add(news)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "cannot add News")
 	}
@@ -66,7 +80,6 @@ func (nc NewsController) Show(c echo.Context) error {
 	}
 
 	news, err := nc.model.IncreaseViewCount(id)
-	// news, err := nc.model.GetByID(id)
 	if err != nil {
 		fmt.Println(err)
 		return c.String(http.StatusInternalServerError, "Cannot get News")
@@ -75,6 +88,7 @@ func (nc NewsController) Show(c echo.Context) error {
 	return c.JSON(http.StatusOK, news)
 }
 
+// ADMIN = status news published,upload,edit,edited
 func (nc NewsController) GetByStatus(c echo.Context) error {
 	status := c.QueryParam("status")
 	news, err := nc.model.GetByStatus(status)
@@ -84,9 +98,24 @@ func (nc NewsController) GetByStatus(c echo.Context) error {
 	return c.JSON(http.StatusOK, news)
 }
 
+// JURNALIS/EDITOR = status news
+func (nc NewsController) GetByStatusJE(c echo.Context) error {
+	status := c.QueryParam("status")
+	// id := c.QueryParam("id_user")
+	userInfo := appMiddleware.ExtractTokenUserId(c)
+
+	// id_user, err := strconv.Atoi(userInfo.IdUser)
+	news, err := nc.model.GetByStatusJE(userInfo.IdUser, status)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "cannot get News")
+	}
+	return c.JSON(http.StatusOK, news)
+}
+
 func (nc NewsController) GetByCategory(c echo.Context) error {
 	category := c.QueryParam("category")
-	news, err := nc.model.GetByCategory(category)
+	status := c.QueryParam("status")
+	news, err := nc.model.GetByCategory(category, status)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "cannot get News")
 	}
@@ -100,6 +129,13 @@ func (nc NewsController) Edit(c echo.Context) error {
 		fmt.Println(err)
 		return c.String(http.StatusBadRequest, "invalid news id")
 	}
+
+	infoNews, err := nc.model.GetByID(newsId)
+	if err != nil {
+		fmt.Println(err)
+		return c.String(http.StatusInternalServerError, "cannot get news")
+	}
+
 	var news appModel.News
 	if err := c.Bind(&news); err != nil {
 		fmt.Println(err)
@@ -109,7 +145,7 @@ func (nc NewsController) Edit(c echo.Context) error {
 	if userInfo.Role == "editor" {
 		news.Status = "edited"
 		news.IdEditor = userInfo.IdUser
-		news.IdJurnalis = 1
+		news.IdJurnalis = infoNews.IdJurnalis
 	} else {
 		news.Status = "upload"
 		news.IdJurnalis = userInfo.IdUser

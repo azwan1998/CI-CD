@@ -14,29 +14,97 @@ func NewNewsDbModel(db *gorm.DB) *NewsDbModel {
 	}
 }
 
-func (nm *NewsDbModel) GetAll() ([]News, error) {
+func (nm *NewsDbModel) GetAll(view string) ([]News, error) {
+	var allNews []News
+	if view == "update" {
+		err := nm.db.Table("news").
+			Select("news.id, news.judul, news.isi, news.kategori,news.id_usrJurnalis AS IdJurnalis,news.id_usrEditor AS IdEditor, news.status, news.foto, news.updated_at,news.created_at,news.deleted_at, news.view, users_jurnalis.name as JurnalisName, users_editor.name as EditorName").
+			Joins("JOIN users as users_jurnalis ON news.id_usrJurnalis = users_jurnalis.id").
+			Joins("LEFT JOIN users as users_editor ON news.id_usrEditor = users_editor.id").
+			Where("news.status = ?", "published").
+			Order("news.updated_at DESC").
+			Find(&allNews).
+			Error
+		return allNews, err
+	} else {
+		err := nm.db.Table("news").
+			Select("news.id, news.judul, news.isi, news.kategori,news.id_usrJurnalis AS IdJurnalis,news.id_usrEditor AS IdEditor, news.status, news.foto, news.updated_at,news.created_at,news.deleted_at, news.view, users_jurnalis.name as JurnalisName, users_editor.name as EditorName").
+			Joins("JOIN users as users_jurnalis ON news.id_usrJurnalis = users_jurnalis.id").
+			Joins("LEFT JOIN users as users_editor ON news.id_usrEditor = users_editor.id").
+			Where("news.status = ?", "published").
+			Order("news.view DESC").
+			Find(&allNews).
+			Error
+		return allNews, err
+	}
+
+}
+
+func (nm *NewsDbModel) GetByStatus(status string) ([]News, error) {
 	var allNews []News
 	err := nm.db.Table("news").
-		Select("news.id, news.judul, news.isi, news.kategori, news.status, news.foto, news.updated_at as published, news.view, users_jurnalis.name as nama_jurnalis, users_editor.name as nama_editor").
+		Select("news.id, news.judul, news.isi, news.kategori,news.id_usrJurnalis AS IdJurnalis,news.id_usrEditor AS IdEditor, news.status, news.foto, news.updated_at ,news.created_at,news.deleted_at, news.view, users_jurnalis.name as JurnalisName, users_editor.name as EditorName").
 		Joins("JOIN users as users_jurnalis ON news.id_usrJurnalis = users_jurnalis.id").
 		Joins("LEFT JOIN users as users_editor ON news.id_usrEditor = users_editor.id").
-		Where("news.status = ?", "published").
+		Where("news.status = ?", status).
 		Order("news.updated_at DESC").
 		Find(&allNews).
 		Error
 	return allNews, err
 }
 
-func (nm *NewsDbModel) GetByStatus(status string) ([]News, error) {
+func (nm *NewsDbModel) GetByStatusJE(id_user int, status string) ([]News, error) {
 	var allNews []News
-	err := nm.db.Where("status = ?", status).Find(&allNews).Error
-	return allNews, err
+	if status == "edit" {
+		err := nm.db.Table("news").
+			Select("news.id, news.judul, news.isi, news.kategori,news.id_usrJurnalis AS IdJurnalis,news.id_usrEditor AS IdEditor, news.status, news.foto, news.updated_at as Published,news.created_at,news.deleted_at, news.view, users_jurnalis.name as JurnalisName, users_editor.name as EditorName").
+			Joins("JOIN users as users_jurnalis ON news.id_usrJurnalis = users_jurnalis.id").
+			Joins("LEFT JOIN users as users_editor ON news.id_usrEditor = users_editor.id").
+			Where("news.status = ?", status).
+			Where("news.id_usrEditor = ?", id_user).
+			Order("news.updated_at DESC").
+			Find(&allNews).
+			Error
+		return allNews, err
+	} else {
+		err := nm.db.Table("news").
+			Select("news.id, news.judul, news.isi, news.kategori,news.id_usrJurnalis AS IdJurnalis,news.id_usrEditor AS IdEditor, news.status, news.foto, news.updated_at as Published,news.created_at,news.deleted_at, news.view, users_jurnalis.name as JurnalisName, users_editor.name as EditorName").
+			Joins("JOIN users as users_jurnalis ON news.id_usrJurnalis = users_jurnalis.id").
+			Joins("LEFT JOIN users as users_editor ON news.id_usrEditor = users_editor.id").
+			Where("news.status = ?", status).
+			Where("news.id_usrJurnalis = ?", id_user).
+			Order("news.updated_at DESC").
+			Find(&allNews).
+			Error
+		return allNews, err
+	}
 }
 
-func (nm *NewsDbModel) GetByCategory(category string) ([]News, error) {
+func (nm *NewsDbModel) GetByCategory(category string, status string) ([]News, error) {
 	var allNews []News
-	err := nm.db.Where("kategori = ?", category).Find(&allNews).Error
-	return allNews, err
+	if status == "published" {
+		err := nm.db.Table("news").
+			Select("news.id, news.judul, news.isi, news.kategori,news.id_usrJurnalis AS IdJurnalis,news.id_usrEditor AS IdEditor, news.status, news.foto, news.updated_at as Published,news.created_at,news.deleted_at, news.view, users_jurnalis.name as JurnalisName, users_editor.name as EditorName").
+			Joins("JOIN users as users_jurnalis ON news.id_usrJurnalis = users_jurnalis.id").
+			Joins("LEFT JOIN users as users_editor ON news.id_usrEditor = users_editor.id").
+			Where("news.kategori = ?", category).
+			Where("news.status = ?", "published").
+			Order("news.updated_at DESC").
+			Find(&allNews).
+			Error
+		return allNews, err
+	} else {
+		err := nm.db.Table("news").
+			Select("news.id, news.judul, news.isi, news.kategori,news.id_usrJurnalis AS IdJurnalis,news.id_usrEditor AS IdEditor, news.status, news.foto, news.updated_at as Published,news.created_at,news.deleted_at, news.view, users_jurnalis.name as JurnalisName, users_editor.name as EditorName").
+			Joins("JOIN users as users_jurnalis ON news.id_usrJurnalis = users_jurnalis.id").
+			Joins("LEFT JOIN users as users_editor ON news.id_usrEditor = users_editor.id").
+			Where("news.kategori = ?", category).
+			Order("news.updated_at DESC").
+			Find(&allNews).
+			Error
+		return allNews, err
+	}
+
 }
 
 func (nm *NewsDbModel) GetByID(id int) (News, error) {
@@ -47,7 +115,13 @@ func (nm *NewsDbModel) GetByID(id int) (News, error) {
 
 func (nm *NewsDbModel) IncreaseViewCount(id int) (News, error) {
 	news := News{}
-	err := nm.db.First(&news, id).Error
+	err := nm.db.Table("news").
+		Select("news.id, news.judul, news.isi, news.kategori,news.id_usrJurnalis AS IdJurnalis,news.id_usrEditor AS IdEditor, news.status, news.foto, news.updated_at,news.created_at,news.deleted_at, news.view, users_jurnalis.name as JurnalisName, users_editor.name as EditorName").
+		Joins("JOIN users as users_jurnalis ON news.id_usrJurnalis = users_jurnalis.id").
+		Joins("LEFT JOIN users as users_editor ON news.id_usrEditor = users_editor.id").
+		Where("news.id = ?", id).
+		Find(&news).
+		Error
 	if err != nil {
 		return news, err
 	}
@@ -82,12 +156,22 @@ func (nm *NewsDbModel) Edit(id int, news News) (News, error) {
 
 func (nm *NewsDbModel) ApproveNews(id int, news News) (News, error) {
 	p := News{}
-	err := nm.db.First(&p, id).Error
+	err := nm.db.Table("news").
+		Select("news.*, users_jurnalis.name as JurnalisName, users_editor.name as EditorName").
+		Joins("JOIN users as users_jurnalis ON news.id_usrJurnalis = users_jurnalis.id").
+		Joins("LEFT JOIN users as users_editor ON news.id_usrEditor = users_editor.id").
+		Where("news.id = ?", id).
+		Find(&p).
+		Error
 	if err != nil {
 		return p, err
 	}
 
 	p.Status = news.Status
+
+	if news.Status == "edit" {
+		p.IdEditor = news.IdEditor
+	}
 	// "update person set ... where id=?", id
 	err = nm.db.Save(&p).Error
 	return p, err
