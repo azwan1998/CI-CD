@@ -4,8 +4,8 @@ services:
     image: bitnami/mysql
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: toor
-      MYSQL_DATABASE: alta
+      MYSQL_ROOT_PASSWORD: 
+      MYSQL_DATABASE: news
     ports: 
       - 3306:3306
     volumes:
@@ -23,7 +23,7 @@ services:
         condition: service_healthy
     environment:
       HTTP_PORT: 8080
-      CONNECTION_STRING: root:@tcp(appDb:3306)/alta?charset=utf8&parseTime=True&loc=Local
+      CONNECTION_STRING: root:@tcp(appDb:3306)/news?charset=utf8&parseTime=True&loc=Local
       STORAGE: db
     ports:
       - 8080:8080

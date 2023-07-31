@@ -17,14 +17,16 @@ type LoginInfo struct {
 }
 
 type PersonController struct {
-	model     appModel.PersonModel
-	jwtSecret string
+	model        appModel.PersonModel
+	profileModel appModel.ProfileModel
+	jwtSecret    string
 }
 
-func NewPersonController(jwtSecret string, m appModel.PersonModel) PersonController {
+func NewPersonController(jwtSecret string, m appModel.PersonModel, profileModel appModel.ProfileModel) PersonController {
 	return PersonController{
-		jwtSecret: jwtSecret,
-		model:     m,
+		jwtSecret:    jwtSecret,
+		model:        m,
+		profileModel: profileModel,
 	}
 }
 
@@ -41,7 +43,7 @@ func (pc PersonController) Login(c echo.Context) error {
 		return c.String(http.StatusUnauthorized, "invalid credentials")
 	}
 
-	token, err := appMiddleware.CreateToken(int(person.ID), pc.jwtSecret)
+	token, err := appMiddleware.CreateToken(int(person.ID), person.Role, pc.jwtSecret)
 	if err != nil {
 		fmt.Println(err)
 		return c.String(http.StatusBadRequest, "cannot create token")
@@ -68,6 +70,7 @@ func (pc PersonController) Register(c echo.Context) error {
 	}
 
 	person.Password = encryptedPassword
+	person.IsActive = true
 
 	newPerson, err := pc.model.Add(person)
 	if err != nil {
@@ -75,8 +78,21 @@ func (pc PersonController) Register(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "cannot register")
 	}
 
+	userID := int(newPerson.ID)
+
+	profile := appModel.Profile{
+		IdUser: userID,
+		// Set other profile data here if needed
+	}
+
+	_, err = pc.profileModel.Add(profile)
+	if err != nil {
+		fmt.Println(err)
+		return c.String(http.StatusInternalServerError, "cannot create profile")
+	}
+
 	// Generate token
-	token, err := appMiddleware.CreateToken(int(newPerson.ID), pc.jwtSecret)
+	token, err := appMiddleware.CreateToken(int(newPerson.ID), person.Role, pc.jwtSecret)
 	if err != nil {
 		fmt.Println(err)
 		return c.String(http.StatusBadRequest, "cannot generate token")

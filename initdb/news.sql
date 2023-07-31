@@ -5,6 +5,8 @@ CREATE TABLE `news`.`news` (
   `isi` VARCHAR(1000) NOT NULL,
   `kategori` VARCHAR(45) NOT NULL,
   `status` VARCHAR(45) NOT NULL,
+  `foto` VARCHAR(255) NOT NULL,
   `created_at` TIMESTAMP(6) NULL,
   `updated_at` TIMESTAMP(6) NULL,
+  `deleted_at` TIMESTAMP(6) NULL,
   PRIMARY KEY (`id`));

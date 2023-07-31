@@ -9,9 +9,10 @@ import (
 
 func initTestEcho() (e *echo.Echo, pc PersonController) {
 	personModel := appModel.NewPersonMemModel()
+	profileModel := appModel.NewProfileMemModel()
 	e = echo.New()
 	appMiddleware.AddGlobalMiddlewares(e)
 	jwtSecret := "rahasiaBanget"
-	pc = HandleRoutes(e, jwtSecret, personModel)
+	pc = HandleRoutes(e, jwtSecret, personModel, profileModel)
 	return e, pc
 }

@@ -7,11 +7,9 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
-func HandleRoutes(e *echo.Echo, jwtSecret string, personModel appModel.PersonModel) PersonController {
+func HandleRoutes(e *echo.Echo, jwtSecret string, personModel appModel.PersonModel, profileModel appModel.ProfileModel) PersonController {
 
-	personController := NewPersonController(jwtSecret, personModel)
-	e.POST("/persons", personController.Add)
-	e.POST("/persons/", personController.Add)
+	personController := NewPersonController(jwtSecret, personModel, profileModel)
 
 	e.POST("/login", personController.Login)
 	e.POST("/login/", personController.Login)
@@ -30,19 +28,51 @@ func HandleRoutes(e *echo.Echo, jwtSecret string, personModel appModel.PersonMod
 	return personController
 }
 
-func HandleRoutesNews(e *echo.Echo, jwtSecret string, newsModel appModel.NewsModel) NewsController {
+func HandleRoutesNews(e *echo.Echo, jwtSecret string, newsModel appModel.NewsModel, profileModel appModel.ProfileModel) NewsController {
 
-	newsController := NewNewsController(newsModel, jwtSecret)
+	newsController := NewNewsController(newsModel, profileModel, jwtSecret)
+
+	e.GET("/news", newsController.GetAll)
+	e.GET("/news/", newsController.GetAll)
+	e.GET("/news/:id", newsController.Show)
+	e.GET("/news/:id/", newsController.Show)
+	e.GET("/news/category", newsController.GetByCategory)
+	e.GET("/news/category/", newsController.GetByCategory)
 
 	jwtMiddleware := middleware.JWT([]byte(jwtSecret))
 
 	//users
-	e.GET("/news", newsController.GetAll, jwtMiddleware)
-	e.GET("/news/", newsController.GetAll, jwtMiddleware)
 	e.POST("/news/store", newsController.Add, jwtMiddleware)
 	e.POST("/news/store/", newsController.Add, jwtMiddleware)
-	e.GET("/news/:id", newsController.Show, jwtMiddleware)
-	e.GET("/news/:id/", newsController.Show, jwtMiddleware)
+	e.POST("/news/update:id", newsController.Edit, jwtMiddleware)
+	e.POST("/news/update/:id", newsController.Edit, jwtMiddleware)
+	e.POST("/news/approve:id", newsController.ApproveNews, jwtMiddleware)
+	e.POST("/news/approve/:id", newsController.ApproveNews, jwtMiddleware)
+	e.GET("/news/status", newsController.GetByStatus, jwtMiddleware)
+	e.GET("/news/status/", newsController.GetByStatus, jwtMiddleware)
+	e.GET("/news/statusJE", newsController.GetByStatusJE, jwtMiddleware)
+	e.GET("/news/statusJE/", newsController.GetByStatusJE, jwtMiddleware)
 
 	return newsController
+}
+
+func HandleRoutesProfile(e *echo.Echo, jwtSecret string, profileModel appModel.ProfileModel) ProfileController {
+
+	profileController := NewProfileController(profileModel, jwtSecret)
+
+	jwtMiddleware := middleware.JWT([]byte(jwtSecret))
+
+	//users
+	e.GET("/profile", profileController.GetAll, jwtMiddleware)
+	e.GET("/profile/", profileController.GetAll, jwtMiddleware)
+	e.GET("/profile:id", profileController.GetById, jwtMiddleware)
+	e.GET("/profile/:id", profileController.GetById, jwtMiddleware)
+	e.POST("/profile/store", profileController.Add, jwtMiddleware)
+	e.POST("/profile/store/", profileController.Add, jwtMiddleware)
+	e.POST("/profile/update:id", profileController.Edit, jwtMiddleware)
+	e.POST("/profile/update/:id", profileController.Edit, jwtMiddleware)
+	e.POST("/profile/approve:id", profileController.ApproveProfile, jwtMiddleware)
+	e.POST("/profile/approve/:id", profileController.ApproveProfile, jwtMiddleware)
+
+	return profileController
 }
