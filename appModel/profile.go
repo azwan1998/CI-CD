@@ -38,7 +38,7 @@ func (Profile) TableName() string {
 }
 
 type ProfileResponse struct {
-	ID         uint      `json:"id"`
+	Id         int       `json:"id" gorm:"column:id"`
 	IdUser     int       `json:"id_user" gorm:"column:id_user"`
 	Alamat     string    `json:"alamat"`
 	Institusi  string    `json:"institusi"`

@@ -45,7 +45,7 @@ func (nc NewsController) Add(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "invalid News data")
 	}
 
-	profile, err := nc.profileModel.GetByIdUser(userInfo.IdUser)
+	profile, err := nc.profileModel.GetById(userInfo.IdUser)
 	fmt.Println("data profile: ", profile.IsApprove)
 	if err != nil {
 		fmt.Println(err)
