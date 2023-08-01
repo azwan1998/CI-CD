@@ -17,6 +17,9 @@ func HandleRoutes(e *echo.Echo, jwtSecret string, personModel appModel.PersonMod
 	e.POST("/register", personController.Register)
 	e.POST("/register/", personController.Register)
 
+	e.GET("/logout", personController.Logout)
+	e.GET("/logout/", personController.Logout)
+
 	jwtMiddleware := middleware.JWT([]byte(jwtSecret))
 
 	//users
@@ -24,6 +27,10 @@ func HandleRoutes(e *echo.Echo, jwtSecret string, personModel appModel.PersonMod
 	e.GET("/persons/", personController.GetAll, jwtMiddleware)
 	e.PUT("/persons/:id", personController.Edit, jwtMiddleware)
 	e.PUT("/persons/:id/", personController.Edit, jwtMiddleware)
+	e.PUT("/persons/isActive:id", personController.IsActive, jwtMiddleware)
+	e.PUT("/persons/isActive/:id", personController.IsActive, jwtMiddleware)
+	e.POST("/persons/add", personController.AddEditor, jwtMiddleware)
+	e.POST("/persons/add/", personController.AddEditor, jwtMiddleware)
 
 	return personController
 }
@@ -44,10 +51,10 @@ func HandleRoutesNews(e *echo.Echo, jwtSecret string, newsModel appModel.NewsMod
 	//users
 	e.POST("/news/store", newsController.Add, jwtMiddleware)
 	e.POST("/news/store/", newsController.Add, jwtMiddleware)
-	e.POST("/news/update:id", newsController.Edit, jwtMiddleware)
-	e.POST("/news/update/:id", newsController.Edit, jwtMiddleware)
-	e.POST("/news/approve:id", newsController.ApproveNews, jwtMiddleware)
-	e.POST("/news/approve/:id", newsController.ApproveNews, jwtMiddleware)
+	e.PUT("/news/update:id", newsController.Edit, jwtMiddleware)
+	e.PUT("/news/update/:id", newsController.Edit, jwtMiddleware)
+	e.PUT("/news/approve:id", newsController.ApproveNews, jwtMiddleware)
+	e.PUT("/news/approve/:id", newsController.ApproveNews, jwtMiddleware)
 	e.GET("/news/status", newsController.GetByStatus, jwtMiddleware)
 	e.GET("/news/status/", newsController.GetByStatus, jwtMiddleware)
 	e.GET("/news/statusJE", newsController.GetByStatusJE, jwtMiddleware)
