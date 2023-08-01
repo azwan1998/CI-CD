@@ -76,8 +76,8 @@ func HandleRoutesProfile(e *echo.Echo, jwtSecret string, profileModel appModel.P
 	e.GET("/profile/:id", profileController.GetById, jwtMiddleware)
 	e.POST("/profile/store", profileController.Add, jwtMiddleware)
 	e.POST("/profile/store/", profileController.Add, jwtMiddleware)
-	e.POST("/profile/update:id", profileController.Edit, jwtMiddleware)
-	e.POST("/profile/update/:id", profileController.Edit, jwtMiddleware)
+	e.PUT("/profile/update", profileController.Edit, jwtMiddleware)
+	e.PUT("/profile/update/", profileController.Edit, jwtMiddleware)
 	e.POST("/profile/approve:id", profileController.ApproveProfile, jwtMiddleware)
 	e.POST("/profile/approve/:id", profileController.ApproveProfile, jwtMiddleware)
 
