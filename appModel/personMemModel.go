@@ -51,3 +51,12 @@ func (pm *PersonMemModel) Edit(id int, p Person) (Person, error) {
 	pm.data[id] = p
 	return p, nil
 }
+
+func (pm *PersonMemModel) IsActive(id int, p Person) (Person, error) {
+	if id < 0 || id >= len(pm.data) {
+		return p, fmt.Errorf("person %d not found", id)
+	}
+	p.ID = uint(id)
+	pm.data[id] = p
+	return p, nil
+}

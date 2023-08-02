@@ -39,6 +39,10 @@ func (pc PersonController) Login(c echo.Context) error {
 		return c.String(http.StatusBadRequest, "cannot login")
 	}
 
+	if person.IsActive == false {
+		return c.String(http.StatusUnauthorized, "your account inactive. please contact admin to active your account")
+	}
+
 	if !appMiddleware.VerifyPassword(loginInfo.Password, person.Password) {
 		return c.String(http.StatusUnauthorized, "invalid credentials")
 	}
@@ -102,6 +106,34 @@ func (pc PersonController) Register(c echo.Context) error {
 	return c.JSON(http.StatusOK, newPerson)
 }
 
+func (pc PersonController) AddEditor(c echo.Context) error {
+	currentLoginPersonId := appMiddleware.ExtractTokenUserId(c)
+
+	if currentLoginPersonId.Role != "admin" {
+		return c.String(http.StatusBadRequest, "you not allowed to add user")
+	}
+	person := appModel.Person{}
+	c.Bind(&person)
+
+	// Enkripsi kata sandi sebelum menyimpan ke database
+	encryptedPassword, err := appMiddleware.EncryptPassword(person.Password)
+	if err != nil {
+		fmt.Println(err)
+		return c.String(http.StatusInternalServerError, "cannot add editor")
+	}
+
+	person.Password = encryptedPassword
+	person.IsActive = true
+
+	newPerson, err := pc.model.Add(person)
+	if err != nil {
+		fmt.Println(err)
+		return c.String(http.StatusBadRequest, "cannot add")
+	}
+
+	return c.JSON(http.StatusOK, newPerson)
+}
+
 func (pc PersonController) GetAll(c echo.Context) error {
 	currentLoginPersonId := appMiddleware.ExtractTokenUserId(c)
 	fmt.Println("😸 Current user id: ", currentLoginPersonId)
@@ -111,19 +143,6 @@ func (pc PersonController) GetAll(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "cannot get persons")
 	}
 	return c.JSON(http.StatusOK, allPersons)
-}
-
-func (pc PersonController) Add(c echo.Context) error {
-	var person appModel.Person
-	if err := c.Bind(&person); err != nil {
-		fmt.Println(err)
-		return c.String(http.StatusBadRequest, "invalid person data")
-	}
-	person, err := pc.model.Add(person)
-	if err != nil {
-		return c.String(http.StatusInternalServerError, "cannot add person")
-	}
-	return c.JSON(http.StatusOK, person)
 }
 
 func (pc PersonController) Edit(c echo.Context) error {
@@ -142,4 +161,38 @@ func (pc PersonController) Edit(c echo.Context) error {
 		return c.String(http.StatusInternalServerError, "cannot edit person")
 	}
 	return c.JSON(http.StatusOK, person)
+}
+
+func (pc PersonController) IsActive(c echo.Context) error {
+	personId, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		fmt.Println(err)
+		return c.String(http.StatusBadRequest, "invalid person id")
+	}
+	var person appModel.Person
+	if err := c.Bind(&person); err != nil {
+		fmt.Println(err)
+		return c.String(http.StatusBadRequest, "invalid person data")
+	}
+	person, err = pc.model.IsActive(personId, person)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "cannot edit person")
+	}
+	return c.JSON(http.StatusOK, person)
+}
+
+func (pc PersonController) Logout(c echo.Context) error {
+	// Proses logout di sini
+	cookie := &http.Cookie{
+		Name:     "access_token",
+		Value:    "",
+		Path:     "/",
+		MaxAge:   0,
+		HttpOnly: true,
+	}
+	c.SetCookie(cookie)
+
+	return c.JSON(http.StatusOK, map[string]string{
+		"message": "Logged out successfully",
+	})
 }

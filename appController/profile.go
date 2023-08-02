@@ -37,6 +37,7 @@ func (pc ProfileController) GetAll(c echo.Context) error {
 	// Convert each ProfileResponse to Profile to be able to use FillFilePaths
 	for i := range allProfiles {
 		profile := appModel.Profile{
+			Id:         allProfiles[i].Id,
 			Alamat:     allProfiles[i].Alamat,
 			Institusi:  allProfiles[i].Institusi,
 			Foto:       allProfiles[i].Foto,
@@ -53,7 +54,7 @@ func (pc ProfileController) GetAll(c echo.Context) error {
 
 		// Replace the ProfileResponse with the modified Profile
 		allProfiles[i] = appModel.ProfileResponse{
-			ID:         profile.ID,
+			Id:         allProfiles[i].Id,
 			Alamat:     profile.Alamat,
 			Institusi:  profile.Institusi,
 			Foto:       profile.Foto,
@@ -89,6 +90,7 @@ func (pc ProfileController) GetById(c echo.Context) error {
 
 	// Convert the ProfileResponse to Profile
 	profile := appModel.Profile{
+		Id:         profileResponse.Id,
 		Alamat:     profileResponse.Alamat,
 		Institusi:  profileResponse.Institusi,
 		Foto:       profileResponse.Foto,
@@ -98,13 +100,30 @@ func (pc ProfileController) GetById(c echo.Context) error {
 		IsApprove:  profileResponse.IsApprove,
 		CreatedAt:  profileResponse.CreatedAt,
 		UpdatedAt:  profileResponse.UpdatedAt,
-		// Add other fields as needed from the User struct
 	}
 
 	// Populate the photo URLs using the FillFilePaths function
 	appModel.FillFilePaths(&profile)
 
-	return c.JSON(http.StatusOK, profile)
+	response := appModel.ProfileResponse{
+		Id:         profileResponse.Id,
+		Alamat:     profile.Alamat,
+		Institusi:  profile.Institusi,
+		Foto:       profile.Foto,
+		FotoIjazah: profile.FotoIjazah,
+		FotoKTP:    profile.FotoKTP,
+		Surat:      profile.Surat,
+		IsApprove:  profile.IsApprove,
+		CreatedAt:  profile.CreatedAt,
+		UpdatedAt:  profile.UpdatedAt,
+		UserName:   profileResponse.UserName,
+		Email:      profileResponse.Email,
+		Role:       profileResponse.Role,
+		IdUser:     profileResponse.IdUser,
+		IsActive:   profileResponse.IsActive,
+	}
+
+	return c.JSON(http.StatusOK, response)
 }
 
 func (pc ProfileController) Add(c echo.Context) error {
@@ -160,14 +179,16 @@ func (pc ProfileController) uploadFile(c echo.Context, fieldname string) (string
 }
 
 func (pc ProfileController) Edit(c echo.Context) error {
-	profileID, err := strconv.Atoi(c.Param("id"))
+	userInfo := appMiddleware.ExtractTokenUserId(c)
+	fmt.Println("Current user id: ", userInfo.IdUser)
+	profileID, err := pc.model.GetById(userInfo.IdUser)
 	if err != nil {
 		fmt.Println(err)
 		return c.String(http.StatusBadRequest, "ID profil tidak valid")
 	}
 
 	var existingProfile appModel.Profile // Simpan data existing profile dari database
-	err = pc.model.GetByID(profileID, &existingProfile)
+	err = pc.model.GetByID(profileID.Id, &existingProfile)
 	if err != nil {
 		fmt.Println(err)
 		return c.String(http.StatusInternalServerError, "Tidak dapat mengambil data profil")
@@ -220,7 +241,7 @@ func (pc ProfileController) Edit(c echo.Context) error {
 	}
 
 	// Panggil fungsi Edit di model untuk mengupdate data
-	updatedProfile, err := pc.model.Edit(profileID, existingProfile)
+	updatedProfile, err := pc.model.Edit(profileID.Id, existingProfile)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "Tidak dapat mengedit profil")
 	}
