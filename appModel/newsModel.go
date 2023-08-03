@@ -1,7 +1,7 @@
 package appModel
 
 type NewsModel interface {
-	GetAll(view string) ([]News, error)
+	GetAll(view string) ([]NewsResponse, error)
 	GetByID(id int) (News, error)
 	GetByStatus(status string) ([]News, error)
 	GetByStatusJE(id_user int, status string) ([]News, error)
