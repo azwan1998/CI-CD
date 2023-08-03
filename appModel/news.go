@@ -18,14 +18,15 @@ type UserNews struct {
 
 type News struct {
 	gorm.Model
-	IdJurnalis   int       `json:"id_usrJurnalis" gorm:"column:id_usrJurnalis"`
-	IdEditor     int       `json:"id_usrEditor" gorm:"column:id_usrEditor"`
-	Judul        string    `json:"judul"`
-	Isi          string    `json:"isi"`
-	Foto         string    `json:"foto"`
-	Kategori     string    `json:"kategori"`
-	Status       string    `json:"status"`
-	View         int       `json:"view"`
+	IdJurnalis int    `json:"id_usrJurnalis" gorm:"column:id_usrJurnalis"`
+	IdEditor   int    `json:"id_usrEditor" gorm:"column:id_usrEditor"`
+	Judul      string `json:"judul"`
+	Isi        string `json:"isi"`
+	Foto       string `json:"foto"`
+	Kategori   string `json:"kategori"`
+	Status     string `json:"status"`
+	View       int    `json:"view"`
+	// PhotoURL     string    `json:"foto"`
 	JurnalisName string    `json:"jurnalis_name" gorm:"column:id_usrJurnalis"`
 	EditorName   string    `json:"editor_name" gorm:"column:id_usrEditor"`
 	CreatedAt    time.Time `json:"created_at" gorm:"column:created_at"`
@@ -50,4 +51,5 @@ type NewsResponse struct {
 	EditorName   string    `json:"editor_name"`
 	CreatedAt    time.Time `json:"created_at" gorm:"column:created_at"`
 	UpdatedAt    time.Time `json:"updated_at" gorm:"column:updated_at"`
+	PhotoURL     string    `json:"photo_url"`
 }

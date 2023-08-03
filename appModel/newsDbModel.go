@@ -14,8 +14,9 @@ func NewNewsDbModel(db *gorm.DB) *NewsDbModel {
 	}
 }
 
-func (nm *NewsDbModel) GetAll(view string) ([]News, error) {
-	var allNews []News
+func (nm *NewsDbModel) GetAll(view string) ([]NewsResponse, error) {
+	var allNews []NewsResponse
+
 	if view == "update" {
 		err := nm.db.Table("news").
 			Select("news.id, news.judul, news.isi, news.kategori,news.id_usrJurnalis AS IdJurnalis,news.id_usrEditor AS IdEditor, news.status, news.foto, news.updated_at,news.created_at,news.deleted_at, news.view, users_jurnalis.name as JurnalisName, users_editor.name as EditorName").
@@ -25,7 +26,9 @@ func (nm *NewsDbModel) GetAll(view string) ([]News, error) {
 			Order("news.updated_at DESC").
 			Find(&allNews).
 			Error
-		return allNews, err
+		if err != nil {
+			return nil, err
+		}
 	} else {
 		err := nm.db.Table("news").
 			Select("news.id, news.judul, news.isi, news.kategori,news.id_usrJurnalis AS IdJurnalis,news.id_usrEditor AS IdEditor, news.status, news.foto, news.updated_at,news.created_at,news.deleted_at, news.view, users_jurnalis.name as JurnalisName, users_editor.name as EditorName").
@@ -35,9 +38,19 @@ func (nm *NewsDbModel) GetAll(view string) ([]News, error) {
 			Order("news.view DESC").
 			Find(&allNews).
 			Error
-		return allNews, err
+		if err != nil {
+			return nil, err
+		}
 	}
 
+	// Iterate through allNews and populate the PhotoURL field with the accessible photo URL
+	for i := range allNews {
+		if allNews[i].Foto != "" {
+			allNews[i].PhotoURL = "https://localhost:8080/IslamicNews/storage/file/" + allNews[i].Foto
+		}
+	}
+
+	return allNews, nil
 }
 
 func (nm *NewsDbModel) GetByStatus(status string) ([]News, error) {
@@ -50,6 +63,12 @@ func (nm *NewsDbModel) GetByStatus(status string) ([]News, error) {
 		Order("news.updated_at DESC").
 		Find(&allNews).
 		Error
+
+	for i := range allNews {
+		if allNews[i].Foto != "" {
+			allNews[i].Foto = "https://localhost:8080/IslamicNews/storage/file/" + allNews[i].Foto
+		}
+	}
 	return allNews, err
 }
 
@@ -65,7 +84,9 @@ func (nm *NewsDbModel) GetByStatusJE(id_user int, status string) ([]News, error)
 			Order("news.updated_at DESC").
 			Find(&allNews).
 			Error
-		return allNews, err
+		if err != nil {
+			return nil, err
+		}
 	} else {
 		err := nm.db.Table("news").
 			Select("news.id, news.judul, news.isi, news.kategori,news.id_usrJurnalis AS IdJurnalis,news.id_usrEditor AS IdEditor, news.status, news.foto, news.updated_at as Published,news.created_at,news.deleted_at, news.view, users_jurnalis.name as JurnalisName, users_editor.name as EditorName").
@@ -76,8 +97,17 @@ func (nm *NewsDbModel) GetByStatusJE(id_user int, status string) ([]News, error)
 			Order("news.updated_at DESC").
 			Find(&allNews).
 			Error
-		return allNews, err
+		if err != nil {
+			return nil, err
+		}
 	}
+	for i := range allNews {
+		if allNews[i].Foto != "" {
+			allNews[i].Foto = "https://localhost:8080/IslamicNews/storage/file/" + allNews[i].Foto
+		}
+	}
+
+	return allNews, nil
 }
 
 func (nm *NewsDbModel) GetByCategory(category string, status string) ([]News, error) {
@@ -92,7 +122,9 @@ func (nm *NewsDbModel) GetByCategory(category string, status string) ([]News, er
 			Order("news.updated_at DESC").
 			Find(&allNews).
 			Error
-		return allNews, err
+		if err != nil {
+			return nil, err
+		}
 	} else {
 		err := nm.db.Table("news").
 			Select("news.id, news.judul, news.isi, news.kategori,news.id_usrJurnalis AS IdJurnalis,news.id_usrEditor AS IdEditor, news.status, news.foto, news.updated_at as Published,news.created_at,news.deleted_at, news.view, users_jurnalis.name as JurnalisName, users_editor.name as EditorName").
@@ -102,8 +134,17 @@ func (nm *NewsDbModel) GetByCategory(category string, status string) ([]News, er
 			Order("news.updated_at DESC").
 			Find(&allNews).
 			Error
-		return allNews, err
+		if err != nil {
+			return nil, err
+		}
 	}
+	for i := range allNews {
+		if allNews[i].Foto != "" {
+			allNews[i].Foto = "https://localhost:8080/IslamicNews/storage/file/" + allNews[i].Foto
+		}
+	}
+
+	return allNews, nil
 
 }
 
@@ -133,6 +174,7 @@ func (nm *NewsDbModel) IncreaseViewCount(id int) (News, error) {
 }
 
 func (nm *NewsDbModel) Add(p News) (News, error) {
+	// fmt.Printf("Nilai parameter p: %+v\n", p)
 	err := nm.db.Save(&p).Error
 	return p, err
 }

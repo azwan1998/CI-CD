@@ -4,8 +4,11 @@ import (
 	"fmt"
 	"gofrendi/structureExample/appMiddleware"
 	"gofrendi/structureExample/appModel"
+	"io"
 	"net/http"
+	"os"
 	"strconv"
+	"time"
 
 	"github.com/labstack/echo/v4"
 )
@@ -35,18 +38,18 @@ func (nc NewsController) GetAll(c echo.Context) error {
 	return c.JSON(http.StatusOK, allNews)
 }
 
-// upload berita
 func (nc NewsController) Add(c echo.Context) error {
 	userInfo := appMiddleware.ExtractTokenUserId(c)
 	fmt.Println("Current user id: ", userInfo.IdUser)
-	var news appModel.News
-	if err := c.Bind(&news); err != nil {
+
+	// Parse form data including the uploaded file
+	err := c.Request().ParseMultipartForm(10 << 20) // 10 MB limit
+	if err != nil {
 		fmt.Println(err)
-		return c.String(http.StatusBadRequest, "invalid News data")
+		return c.String(http.StatusBadRequest, "invalid form data")
 	}
 
 	profile, err := nc.profileModel.GetById(userInfo.IdUser)
-	fmt.Println("data profile: ", profile.IsApprove)
 	if err != nil {
 		fmt.Println(err)
 		return c.String(http.StatusInternalServerError, "cannot get Profile")
@@ -56,19 +59,61 @@ func (nc NewsController) Add(c echo.Context) error {
 		return c.String(http.StatusForbidden, "You are not allowed to add news, contact admin redaksi to approve your profile")
 	}
 
-	//status upload
-	status := "upload"
-	news.Status = status
-
-	news.IdJurnalis = userInfo.IdUser
 	if userInfo.Role != "jurnalis" {
 		return c.String(http.StatusForbidden, "You are not allowed to add news")
 	}
 
+	news := appModel.News{
+		Judul:    c.FormValue("judul"),
+		Isi:      c.FormValue("isi"),
+		Kategori: c.FormValue("kategori"),
+	}
+
+	// Parse and save the uploaded file (photo)
+	file, err := c.FormFile("foto")
+	if err != nil {
+		fmt.Println(err)
+		return c.String(http.StatusBadRequest, "invalid file upload")
+	}
+
+	// Generate a unique filename for the photo to prevent conflicts
+	filename := fmt.Sprintf("%d-%s", time.Now().UnixNano(), file.Filename)
+
+	// Open the uploaded file
+	src, err := file.Open()
+	if err != nil {
+		fmt.Println(err)
+		return c.String(http.StatusInternalServerError, "failed to open file")
+	}
+	defer src.Close()
+
+	// Create the destination file
+	dst, err := os.Create("storage/file/" + filename)
+	if err != nil {
+		fmt.Println(err)
+		return c.String(http.StatusInternalServerError, "failed to create file")
+	}
+	defer dst.Close()
+
+	// Copy the contents of the uploaded file to the destination file
+	_, err = io.Copy(dst, src)
+	if err != nil {
+		fmt.Println(err)
+		return c.String(http.StatusInternalServerError, "failed to save file")
+	}
+
+	// Set the Foto field to the uploaded filename
+	news.IdJurnalis = userInfo.IdUser
+	news.Foto = filename
+	status := "upload"
+	news.Status = status
+
+	// Add the news to the database
 	news, err = nc.model.Add(news)
 	if err != nil {
 		return c.String(http.StatusInternalServerError, "cannot add News")
 	}
+
 	return c.JSON(http.StatusOK, news)
 }
 
@@ -83,6 +128,10 @@ func (nc NewsController) Show(c echo.Context) error {
 	if err != nil {
 		fmt.Println(err)
 		return c.String(http.StatusInternalServerError, "Cannot get News")
+	}
+
+	if news.Foto != "" {
+		news.Foto = "https://localhost:8080/IslamicNews/storage/file/" + news.Foto
 	}
 
 	return c.JSON(http.StatusOK, news)
