@@ -237,3 +237,35 @@ func (nc NewsController) ApproveNews(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, news)
 }
+
+func (nc NewsController) DeleteNews(c echo.Context) error {
+	// Ambil ID berita dari parameter URL
+	newsID, err := strconv.Atoi(c.Param("id"))
+	if err != nil {
+		return c.String(http.StatusBadRequest, "invalid news ID")
+	}
+	userInfo := appMiddleware.ExtractTokenUserId(c)
+
+	if userInfo.Role == "jurnalis" {
+		news, err := nc.model.GetByID(newsID)
+		if err != nil {
+			return c.String(http.StatusInternalServerError, "failed to fetch news")
+		}
+		if news.Status != "upload" {
+			return c.String(http.StatusForbidden, "jurnalis can only delete news with status 'upload'")
+		}
+	}
+
+	if userInfo.Role == "editor" {
+		return c.String(http.StatusForbidden, "edtitor can't delete news")
+	}
+
+	// Panggil fungsi Delete pada model untuk menghapus berita
+	err = nc.model.Delete(newsID)
+	if err != nil {
+		return c.String(http.StatusInternalServerError, "failed to delete news")
+	}
+
+	// Berhasil menghapus berita
+	return c.String(http.StatusOK, "news deleted successfully")
+}

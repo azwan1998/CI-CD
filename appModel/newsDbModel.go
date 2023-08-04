@@ -237,3 +237,7 @@ func (nm *NewsDbModel) ApproveNews(id int, news News) (News, error) {
 	err = nm.db.Save(&p).Error
 	return p, err
 }
+
+func (nm *NewsDbModel) Delete(id int) error {
+	return nm.db.Where("id = ?", id).Delete(&News{}).Error
+}

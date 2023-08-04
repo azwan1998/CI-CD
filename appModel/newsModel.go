@@ -11,4 +11,5 @@ type NewsModel interface {
 	Edit(int, News) (News, error)
 	ApproveNews(int, News) (News, error)
 	IncreaseViewCount(id int) (News, error)
+	Delete(id int) error
 }
