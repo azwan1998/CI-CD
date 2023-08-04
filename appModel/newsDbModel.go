@@ -72,6 +72,25 @@ func (nm *NewsDbModel) GetByStatus(status string) ([]News, error) {
 	return allNews, err
 }
 
+func (nm *NewsDbModel) Searching(search string) ([]News, error) {
+	var allNews []News
+	err := nm.db.Table("news").
+		Select("news.id, news.judul, news.isi, news.kategori,news.id_usrJurnalis AS IdJurnalis,news.id_usrEditor AS IdEditor, news.search, news.foto, news.updated_at ,news.created_at,news.deleted_at, news.view, users_jurnalis.name as JurnalisName, users_editor.name as EditorName").
+		Joins("JOIN users as users_jurnalis ON news.id_usrJurnalis = users_jurnalis.id").
+		Joins("LEFT JOIN users as users_editor ON news.id_usrEditor = users_editor.id").
+		Where("news.judul LIKE ?", "%"+search+"%").
+		Order("news.updated_at DESC").
+		Find(&allNews).
+		Error
+
+	for i := range allNews {
+		if allNews[i].Foto != "" {
+			allNews[i].Foto = "https://localhost:8080/IslamicNews/storage/file/" + allNews[i].Foto
+		}
+	}
+	return allNews, err
+}
+
 func (nm *NewsDbModel) GetByStatusJE(id_user int, status string) ([]News, error) {
 	var allNews []News
 	if status == "edit" {
