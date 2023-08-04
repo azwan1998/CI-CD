@@ -38,6 +38,16 @@ func (nc NewsController) GetAll(c echo.Context) error {
 	return c.JSON(http.StatusOK, allNews)
 }
 
+func (nc NewsController) Searching(c echo.Context) error {
+	search := c.QueryParam("search")
+	allNews, err := nc.model.Searching(search)
+	if err != nil {
+		fmt.Println(err)
+		return c.String(http.StatusInternalServerError, "cannot get News")
+	}
+	return c.JSON(http.StatusOK, allNews)
+}
+
 func (nc NewsController) Add(c echo.Context) error {
 	userInfo := appMiddleware.ExtractTokenUserId(c)
 	fmt.Println("Current user id: ", userInfo.IdUser)
