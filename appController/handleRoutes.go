@@ -57,6 +57,8 @@ func HandleRoutesNews(e *echo.Echo, jwtSecret string, newsModel appModel.NewsMod
 	e.PUT("/news/approve/:id", newsController.ApproveNews, jwtMiddleware)
 	e.GET("/news/status", newsController.GetByStatus, jwtMiddleware)
 	e.GET("/news/status/", newsController.GetByStatus, jwtMiddleware)
+	e.GET("/news/search", newsController.Searching, jwtMiddleware)
+	e.GET("/news/search/", newsController.Searching, jwtMiddleware)
 	e.GET("/news/statusJE", newsController.GetByStatusJE, jwtMiddleware)
 	e.GET("/news/statusJE/", newsController.GetByStatusJE, jwtMiddleware)
 
